@@ -4,6 +4,8 @@ import (
   "log"
   "net"
   "os"
+  "sync"
+  "./src/listener"
 )
 
 const (
@@ -20,10 +22,8 @@ func main() {
   defer l.Close()
   log.Println("Listening on "+CONN_HOST+":"+CONN_PORT)
   // spin off group listener
+  group := listener.GetInstance()
 
-
-
-  
   for {
 
   }
