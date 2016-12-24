@@ -3,8 +3,6 @@ package main
 import (
   "log"
   "net"
-  "os"
-  "sync"
   "./src/listener"
 )
 
@@ -24,7 +22,13 @@ func main() {
   // spin off group listener
   group := listener.GetInstance()
 
+
   for {
+
+    conn, err := l.Accept()
+    if err != nil {
+      log.Println("Acceptance error: " + err.Error())
+    }
 
   }
 }
