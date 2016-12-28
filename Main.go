@@ -27,7 +27,7 @@ func main() {
 		if err != nil {
 			log.Println("Acceptance error: " + err.Error())
 		}
-		world.AddPlayer(conn)
+		world.ManipulateUsers(conn, listener.ADD_PLAYER)
 		go listener.UserListenerLoop(conn)
 	}
 }

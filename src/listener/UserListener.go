@@ -3,11 +3,12 @@ package listener
 import (
 	"log"
 	"net"
+	"strconv"
 )
 
 type UserListener struct {
 	Conn   net.Conn
-	player User
+	Player User
 	ID     int
 }
 
@@ -18,7 +19,7 @@ type User struct {
 
 func UserListenerLoop(conn net.Conn) {
 	world := GetWorldInstance()
-	player := &UserListener{Conn: conn}
+	player_ := &UserListener{Conn: conn}
 	defer player.Conn.Close()
 	world.AddPlayer(player)
 	buff := make([]byte, 1024)
@@ -27,7 +28,26 @@ func UserListenerLoop(conn net.Conn) {
 		if err != nil {
 			log.Println(err)
 		}
-		// TODO Handle buffer logic
-		player.Conn.Write(world.CurrentState())
+		// disconnect if
+		if bytes.Contains(buff, []byte("exit")) {
+			world.ManipulateUsers(player_, REMOVE_PLAYER)
+			break
+		}
+		// buffer layout should be x_int, y_int
+		values := bytes.Split(buff, []byte(" "))
+		var count = 0
+		for val, _ := range values {
+			pos, err := strconv.Atoi(string(val))
+			if err != nil {
+				log.Println(err)
+				break
+			}
+			if count == 0 {
+				player_.Player.X = pos
+			} else if count == 1 {
+				player_.Player.Y = pos
+			}
+		}
+		player_.Conn.Write(world.CurrentState())
 	}
 }
