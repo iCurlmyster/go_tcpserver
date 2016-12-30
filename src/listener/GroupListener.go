@@ -59,15 +59,16 @@ func (this *WorldListener) CurrentState(id int) []byte {
 	buf := bytes.NewBuffer([]byte(""))
 	str_fmt := ""
 	// format buffer - ID X Y
-	var last_index = len(this.Users) - 1
 	// this should be reworked later to not be raw values
-	for i, val := range this.Users {
-		if i != last_index && id != val.ID {
+	for _, val := range this.Users {
+		if id != val.ID {
 			str_fmt = fmt.Sprintf("%d %d %d,", val.ID, val.Player.X, val.Player.Y)
-		} else if id != val.ID {
-			str_fmt = fmt.Sprintf("%d %d %d\n", val.ID, val.Player.X, val.Player.Y)
+			buf.WriteString(str_fmt)
 		}
-		buf.WriteString(str_fmt)
+	}
+	if buf.Len() > 0 {
+		buf.Truncate(buf.Len() - 1)
+		buf.WriteString("\n")
 	}
 	return buf.Bytes()
 }
