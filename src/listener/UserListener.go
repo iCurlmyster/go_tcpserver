@@ -35,16 +35,15 @@ func UserListenerLoop(conn net.Conn) {
 		}
 		// buffer layout should be x_int, y_int
 		values := bytes.Split(buff, []byte(" "))
-		var count = 0
-		for val, _ := range values {
+		for val, i := range values {
 			pos, err := strconv.Atoi(string(val))
 			if err != nil {
 				log.Println(err)
 				break
 			}
-			if count == 0 {
+			if i == 0 {
 				player_.Player.X = pos
-			} else if count == 1 {
+			} else if i == 1 {
 				player_.Player.Y = pos
 			}
 		}
