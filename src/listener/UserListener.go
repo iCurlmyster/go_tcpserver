@@ -1,7 +1,9 @@
 package listener
 
 import (
+	"bufio"
 	"bytes"
+	"io"
 	"log"
 	"net"
 )
@@ -22,11 +24,15 @@ func UserListenerLoop(conn net.Conn) {
 	player_ := &UserListener{Conn: conn}
 	defer player_.Conn.Close()
 	world.ManipulateUsers(player_, ADD_PLAYER)
-	buff := make([]byte, 8)
 	for {
-		_, err := player_.Conn.Read(buff)
+		tmp_buff, err := bufio.NewReader(player_.Conn).ReadString('\n')
+		buff := []byte(tmp_buff)
 		if err != nil {
-			log.Println("buff err", err)
+			if err != io.EOF {
+				log.Println("buff err", err)
+			}
+			log.Println("breaking out", player_)
+			break
 		}
 		// disconnect if
 		if bytes.Contains(buff, []byte("exit")) {
@@ -44,7 +50,11 @@ func UserListenerLoop(conn net.Conn) {
 		//panic("nothing")
 		player_.Player.X = x_val
 		player_.Player.Y = y_val
-
-		player_.Conn.Write(world.CurrentState())
+		state := world.CurrentState(player_.ID)
+		if bytes.Equal(state, []byte("")) {
+			player_.Conn.Write([]byte("null\n"))
+		} else {
+			player_.Conn.Write(state)
+		}
 	}
 }
