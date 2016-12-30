@@ -2,6 +2,7 @@ package listener
 
 import (
 	"bytes"
+	"fmt"
 	"sync"
 )
 
@@ -10,13 +11,13 @@ type WorldListener struct {
 }
 
 const (
-  ADD_PLAYER int = iota
-  REMOVE_PLAYER
+	ADD_PLAYER int = iota
+	REMOVE_PLAYER
 )
 
 var instance *WorldListener
 var once sync.Once
-var mu sync.Mutex
+var mu *sync.Mutex
 var count int
 
 func GetWorldInstance() *WorldListener {
@@ -29,13 +30,13 @@ func GetWorldInstance() *WorldListener {
 }
 
 func (this *WorldListener) ManipulateUsers(user *UserListener, mode int) {
-  mu.Lock()
-  defer mu.Unlock()
-  if mode == ADD_PLAYER {
-    this.addPlayer(user)
-  } else if mode == REMOVE_PLAYER {
-    this.deletePlayer(user)
-  }
+	mu.Lock()
+	defer mu.Unlock()
+	if mode == ADD_PLAYER {
+		this.addPlayer(user)
+	} else if mode == REMOVE_PLAYER {
+		this.deletePlayer(user)
+	}
 
 }
 
@@ -46,27 +47,27 @@ func (this *WorldListener) addPlayer(user *UserListener) {
 }
 
 func (this *WorldListener) deletePlayer(user *UserListener) {
-  for val, i := range this.Users {
-    if val == user {
-      this.Users = append(this.Users[:i], this.Users[i + 1:])
-      break
-    }
-  }
+	for i, val := range this.Users {
+		if val == user {
+			this.Users = append(this.Users[:i], this.Users[i+1:]...)
+			break
+		}
+	}
 }
 
 func (this *WorldListener) CurrentState() []byte {
-	buf := bytes.NewBuffer("")
+	buf := bytes.NewBuffer([]byte(""))
 	str_fmt := ""
 	// format buffer - ID X Y
-  var last_index = len(this.Users) - 1
-  // this should be reworked later to not be raw values
-	for val, i := range this.Users {
-    if i != last_index {
-		    str_fmt = fmt.Sprintf("%d %d %d,", val.ID, val.User.X, val.User.Y)
-    } else {
-        str_fmt = fmt.Sprintf("%d %d %d", val.ID, val.User.X, val.User.Y)
-    }
-    buf.WriteString(str_fmt)
+	var last_index = len(this.Users) - 1
+	// this should be reworked later to not be raw values
+	for i, val := range this.Users {
+		if i != last_index {
+			str_fmt = fmt.Sprintf("%d %d %d,", val.ID, val.Player.X, val.Player.Y)
+		} else {
+			str_fmt = fmt.Sprintf("%d %d %d", val.ID, val.Player.X, val.Player.Y)
+		}
+		buf.WriteString(str_fmt)
 	}
 	return buf.Bytes()
 }

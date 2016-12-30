@@ -1,9 +1,9 @@
 package listener
 
 import (
+	"bytes"
 	"log"
 	"net"
-	"strconv"
 )
 
 type UserListener struct {
@@ -20,33 +20,31 @@ type User struct {
 func UserListenerLoop(conn net.Conn) {
 	world := GetWorldInstance()
 	player_ := &UserListener{Conn: conn}
-	defer player.Conn.Close()
-	world.AddPlayer(player)
-	buff := make([]byte, 1024)
+	defer player_.Conn.Close()
+	world.ManipulateUsers(player_, ADD_PLAYER)
+	buff := make([]byte, 8)
 	for {
-		readLen, err := player.Conn.Read(buff)
+		_, err := player_.Conn.Read(buff)
 		if err != nil {
-			log.Println(err)
+			log.Println("buff err", err)
 		}
 		// disconnect if
 		if bytes.Contains(buff, []byte("exit")) {
+			log.Println("REMOVING")
 			world.ManipulateUsers(player_, REMOVE_PLAYER)
+			player_.Conn.Write([]byte("bye"))
 			break
+		} else {
+			log.Println("Nope")
 		}
-		// buffer layout should be x_int, y_int
-		values := bytes.Split(buff, []byte(" "))
-		for val, i := range values {
-			pos, err := strconv.Atoi(string(val))
-			if err != nil {
-				log.Println(err)
-				break
-			}
-			if i == 0 {
-				player_.Player.X = pos
-			} else if i == 1 {
-				player_.Player.Y = pos
-			}
-		}
+		// buffer layout should be "x_int y_int"
+		var x_val int = int(buff[0]) | int(buff[1])<<8 | int(buff[2])<<16 | int(buff[3])<<24
+		var y_val int = int(buff[4]) | int(buff[5])<<8 | int(buff[6])<<16 | int(buff[7])<<24
+		//fmt.Println("buff:", buff)
+		//panic("nothing")
+		player_.Player.X = x_val
+		player_.Player.Y = y_val
+
 		player_.Conn.Write(world.CurrentState())
 	}
 }

@@ -20,14 +20,13 @@ func main() {
 	defer l.Close()
 	log.Println("Listening on " + CONN_HOST + ":" + CONN_PORT)
 	// spin off group listener
-	world := listener.GetWorldInstance()
+	listener.GetWorldInstance()
 
 	for {
 		conn, err := l.Accept()
 		if err != nil {
 			log.Println("Acceptance error: " + err.Error())
 		}
-		world.ManipulateUsers(conn, listener.ADD_PLAYER)
 		go listener.UserListenerLoop(conn)
 	}
 }
