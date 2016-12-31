@@ -68,7 +68,6 @@ func (this *WorldListener) CurrentState(id int) []byte {
 	}
 	if buf.Len() > 0 {
 		buf.Truncate(buf.Len() - 1)
-		buf.WriteString("\n")
 	}
 	return buf.Bytes()
 }

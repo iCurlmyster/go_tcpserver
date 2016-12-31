@@ -36,7 +36,7 @@ func UserListenerLoop(conn net.Conn) {
 			log.Println("breaking out", player_)
 			break
 		}
-		log.Println("buff:", buff)
+		//		log.Println("buff:", buff)
 		// disconnect if
 		if bytes.Contains(buff, []byte("exit")) {
 			log.Println("REMOVING")
