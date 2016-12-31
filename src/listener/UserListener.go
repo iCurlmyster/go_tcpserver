@@ -1,7 +1,7 @@
 package listener
 
 import (
-	"bufio"
+	//	"bufio"
 	"bytes"
 	"io"
 	"log"
@@ -23,10 +23,12 @@ func UserListenerLoop(conn net.Conn) {
 	world := GetWorldInstance()
 	player_ := &UserListener{Conn: conn}
 	defer player_.Conn.Close()
+	buff := make([]byte, 8)
 	world.ManipulateUsers(player_, ADD_PLAYER)
 	for {
-		tmp_buff, err := bufio.NewReader(player_.Conn).ReadString('\n')
-		buff := []byte(tmp_buff)
+		//tmp_buff, err := bufio.NewReader(player_.Conn).ReadString('\n')
+		_, err := player_.Conn.Read(buff)
+		//buff := []byte(tmp_buff)
 		if err != nil {
 			if err != io.EOF {
 				log.Println("buff err", err)
@@ -43,7 +45,7 @@ func UserListenerLoop(conn net.Conn) {
 			break
 		}
 		// buffer layout should be "x_int y_int"
-		if len(buff) > 0 {
+		if len(buff) > 1 {
 			var x_val int = int(buff[0]) | int(buff[1])<<8 | int(buff[2])<<16 | int(buff[3])<<24
 			var y_val int = int(buff[4]) | int(buff[5])<<8 | int(buff[6])<<16 | int(buff[7])<<24
 			player_.Player.X = x_val
@@ -51,7 +53,7 @@ func UserListenerLoop(conn net.Conn) {
 		}
 		state := world.CurrentState(player_.ID)
 		if bytes.Equal(state, []byte("")) {
-			player_.Conn.Write([]byte("null\n"))
+			player_.Conn.Write([]byte("null"))
 		} else {
 			player_.Conn.Write(state)
 		}
