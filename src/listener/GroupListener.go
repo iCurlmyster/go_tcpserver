@@ -2,7 +2,6 @@ package listener
 
 import (
 	"bytes"
-	"fmt"
 	"sync"
 )
 
@@ -57,18 +56,22 @@ func (this *WorldListener) deletePlayer(user *UserListener) {
 
 func (this *WorldListener) CurrentState(id int) []byte {
 	buf := bytes.NewBuffer([]byte(""))
-	str_fmt := ""
 	// format buffer - ID X Y
-	// this should be reworked later to not be raw values
 	for _, val := range this.Users {
 		if id != val.ID {
-			str_fmt = fmt.Sprintf("%d %d %d,", val.ID, val.Player.X, val.Player.Y)
-			buf.WriteString(str_fmt)
+			buf.WriteByte(byte(val.ID))
+			buf.WriteByte(byte(val.ID >> 8))
+			buf.WriteByte(byte(val.ID >> 16))
+			buf.WriteByte(byte(val.ID >> 24))
+			buf.WriteByte(byte(val.Player.X))
+			buf.WriteByte(byte(val.Player.X >> 8))
+			buf.WriteByte(byte(val.Player.X >> 16))
+			buf.WriteByte(byte(val.Player.X >> 24))
+			buf.WriteByte(byte(val.Player.Y))
+			buf.WriteByte(byte(val.Player.Y >> 8))
+			buf.WriteByte(byte(val.Player.Y >> 16))
+			buf.WriteByte(byte(val.Player.Y >> 24))
 		}
-	}
-	if buf.Len() > 0 {
-		buf.Truncate(buf.Len() - 1)
-		buf.WriteString("\n")
 	}
 	return buf.Bytes()
 }
